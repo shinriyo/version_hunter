@@ -9,8 +9,19 @@ LOG_FILE="version_log.txt"
 # Google Playのバージョン取得関数
 get_google_play_version() {
     URL=$1
-    VERSION=$(curl -s "$URL" | sed -n 's/.*Current Version.*<span[^>]*>\([^<]*\)<.*/\1/p')
-    echo "$VERSION"
+    # HTMLソースを取得
+    HTML=$(curl -s "$URL")
+
+    # 必要なデータを抽出
+    VERSION=$(echo "$HTML" | sed -nE 's/.*\[[^,]*,[^,]*,[^,]*,\"([0-9]+\.[0-9]+\.[0-9]+)\".*/\1/p' | head -n 1)
+
+    if [ -n "$VERSION" ]; then
+        echo $VERSION
+    else
+        # 必要なデータを抽出
+        VERSION=$(echo "$HTML" | sed -nE 's/.*\[\[\["([0-9]+\.[0-9]+\.[0-9]+)"\]\].*/\1/p')
+        echo $VERSION
+    fi
 }
 
 # App Storeのバージョン取得関数
